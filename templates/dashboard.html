@@ -19,6 +19,32 @@
   <!-- Main Content -->
   <div class="container">
     <div class="row">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Sno</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+          <tr>
+            <td>{{ post.sno }}</td>
+            <td>{{ post.title }}</td>
+            <td>{{ post.date }}</td>
+            <td><button class="btn btn-primary">Edit</button></td>
+            <td><button class="btn btn-primary">Delete</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+
+
       <div class="col-lg-8 col-md-10 mx-auto">
         <!-- <p>Want to get in touch? Fill out the form below to send me a message and I will get back to you as soon as possible!</p> -->
         <!-- Contact Form - Enter your email address on line 19 of the mail/contact_me.php file to make this form work. -->

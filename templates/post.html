@@ -20,6 +20,13 @@
     </div>
   </header>
 
+  {% if post.slug == 'datetime' %}
+
+  {% set fname = 'img/'+post.image %}
+  <img src="{{ url_for('static', filename=fname) }}">
+
+  {% endif %}
+
   <!-- Post Content -->
   <article>
     <div class="container">
