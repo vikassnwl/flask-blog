@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
 import os
+import math
 
 with open('config.json') as c:
     params = json.load(c)['params']
@@ -40,8 +41,33 @@ class Posts(db.Model):
 
 @app.route('/')
 def index():
+
     posts = Posts.query.all()
-    return render_template('index.html', posts=posts)
+    last = math.ceil(len(posts)/int(params['num_posts']))
+    # [:params['num_posts']]
+    
+    page = request.args.get('page')
+    if not str(page).isnumeric():
+        page = 1
+    page = int(page)
+    
+    posts = posts[(page-1)*int(params['num_posts']):(page-1)*int(params['num_posts'])+int(params['num_posts'])]
+    
+    if page == 1:
+        prev = '#'
+        next = "/?page="+str(page+1)
+
+    elif page == last:
+        prev = "/?page="+str(page-1)
+        next = "#"
+
+    else:
+        prev = "/?page="+str(page-1)
+        next = "/?page="+str(page+1)
+
+
+
+    return render_template('index.html', posts=posts, prev=prev, next=next)
 
 
 @app.route('/about')
@@ -114,6 +140,15 @@ def logout():
     return redirect('/')
 
 
+@app.route('/delete/<string:sno>')
+def delete(sno):
+    if 'user' in session and session['user'] == params['admin_user']:
+        post = Posts.query.filter_by(sno=sno).first()
+        db.session.delete(post)
+        db.session.commit()
+    return redirect('/dashboard')
+
+
 @app.route('/edit/<string:sno>', methods=['GET', 'POST'])
 def edit(sno):
     if 'user' in session and session['user'] == params['admin_user']:
@@ -127,6 +162,12 @@ def edit(sno):
             f = request.files['image']
             image = f.filename
             if image:
+                while True:
+
+                    if image not in os.listdir('static/img/post'):
+                        break
+                    splitted = image.split('.')
+                    image = splitted[0]+'0'+'.'+splitted[1]
                 f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(image)))
             
             if sno == '0':
