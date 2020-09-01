@@ -2,7 +2,7 @@
 {% block content %}
 
   <!-- Page Header -->
-  {% set fname = 'img/'+post.image %}
+  {% set fname = 'img/post/'+post.image %}
   <header class="masthead" style="background-image: url('{{ url_for('static', filename=fname) }}')">
     <div class="overlay"></div>
     <div class="container">
@@ -22,7 +22,7 @@
 
   {% if post.slug == 'datetime' %}
 
-  {% set fname = 'img/'+post.image %}
+  {% set fname = 'img/post/'+post.image %}
   <img src="{{ url_for('static', filename=fname) }}">
 
   {% endif %}

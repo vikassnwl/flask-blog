@@ -3,6 +3,6 @@
     {
         "admin_user": "vikas",
         "admin_pass": "0000",
-        "upload_location": "static/img"
+        "upload_location": "static/img/post"
     }
 }
