@@ -1,11 +1,18 @@
 from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
+import os
+
+with open('config.json') as c:
+    params = json.load(c)['params']
 
 app = Flask(__name__)
 
 app.secret_key = 'unique secret key'
+
+app.config['UPLOAD_FOLDER'] = params['upload_location']
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@127.0.0.1/blog'
 
@@ -31,10 +38,6 @@ class Posts(db.Model):
     date = db.Column(db.DateTime(), nullable=False)
 
 
-with open('config.json') as c:
-    params = json.load(c)['params']
-
-
 @app.route('/')
 def index():
     posts = Posts.query.all()
@@ -51,6 +54,14 @@ def post(post_slug):
     post = Posts.query.filter_by(slug=post_slug).first()
     return render_template('post.html', post=post)
 
+
+@app.route('/uploader', methods=['GET', 'POST'])
+def uploader():
+    if 'user' in session and session['user'] == params['admin_user']:
+        if request.method == 'POST':
+            f = request.files['file']
+            f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+            return 'Uploaded successfully'
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -69,18 +80,15 @@ def contact():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username == params['admin_user'] and password == params['admin_pass']:
+            session['user'] = params['admin_user']
+            # return render_template('dashboard.html')
+
     if 'user' in session and session['user'] == params['admin_user']:
-
-        if request.method == 'POST':
-            title = request.form.get('title')
-            tagline = request.form.get('tagline')
-            content = request.form.get('content')
-            slug = request.form.get('slug')
-            image =request.form.get('image')
-
-            entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image, date=datetime.now().strftime("%d %B %Y %I:%M %p"))
-            db.session.add(entry)
-            db.session.commit()
         
         posts = Posts.query.all()
 
@@ -98,6 +106,46 @@ def login():
             session['user'] = params['admin_user']
             return redirect("/dashboard")
     return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user')
+    return redirect('/')
+
+
+@app.route('/edit/<string:sno>', methods=['GET', 'POST'])
+def edit(sno):
+    if 'user' in session and session['user'] == params['admin_user']:
+        post = Posts.query.filter_by(sno=sno).first()
+
+        if request.method == 'POST':
+            title = request.form.get('title')
+            tagline = request.form.get('tagline')
+            content = request.form.get('content')
+            slug = request.form.get('slug')
+            f = request.files['image']
+            image = f.filename
+            if image:
+                f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(image)))
+            
+            if sno == '0':
+                entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image, date=datetime.now().strftime("%d %B %Y %I:%M %p"))
+                db.session.add(entry)
+            else:
+                post.title = title
+                post.tagline = tagline
+                post.content = request.form.get('content')
+                post.slug = slug
+                post.image = image
+
+            db.session.commit()
+        
+        return render_template('edit.html', post=post)
+
+
+    else:
+        return redirect('/login')
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
             <h1>Admin Panel</h1>
-            <span class="subheading">Add data to database</span>
+            <span class="subheading">Manage your posts here</span>
           </div>
         </div>
       </div>
@@ -19,7 +19,27 @@
   <!-- Main Content -->
   <div class="container">
     <div class="row">
-
+      <h1>Basic Actions</h1>
+    </div>
+    <div class="row">
+      <div>
+        <a href="/edit/0"><button class="btn btn-primary">Add New Post</button></a>
+        <a href="/logout"><button class="btn btn-primary">Logout</button></a>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <h1>Upload A File</h1>
+    </div>
+    <div class="row">
+      <form method="POST" action="/uploader" enctype="multipart/form-data">
+        <input type='file' name='file'>
+        <input type='submit' class='btn btn-primary' value='Submit'>
+      </form>
+    </div>
+    <hr>
+    <div class="row">
+      <h1>Edit/Delete Posts</h1>
       <table class="table">
         <thead>
           <tr>
@@ -36,7 +56,7 @@
             <td>{{ post.sno }}</td>
             <td>{{ post.title }}</td>
             <td>{{ post.date }}</td>
-            <td><button class="btn btn-primary">Edit</button></td>
+            <td><a href="/edit/{{ post.sno }}"><button class="btn btn-primary">Edit</button></a></td>
             <td><button class="btn btn-primary">Delete</button></td>
           </tr>
           {% endfor %}
@@ -50,52 +70,7 @@
         <!-- Contact Form - Enter your email address on line 19 of the mail/contact_me.php file to make this form work. -->
         <!-- WARNING: Some web hosts do not allow emails to be sent through forms to common mail hosts like Gmail or Yahoo. It's recommended that you use a private domain email address! -->
         <!-- To use the contact form, your site must be on a live web host with PHP! The form will not work locally! -->
-        <form name="sentMessage" id="contactForm" novalidate method="POST">
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Title</label>
-              <input type="text" name="title" class="form-control" placeholder="Title" id="name" required data-validation-required-message="Please enter your name.">
-              <p class="help-block text-danger"></p>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Tagline</label>
-              <input type="text" name="tagline" class="form-control" placeholder="Tagline" id="name" required data-validation-required-message="Please enter your name.">
-              <p class="help-block text-danger"></p>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Content</label>
-              <input type="text" name="content" class="form-control" placeholder="Content" id="name" required data-validation-required-message="Please enter your name.">
-              <p class="help-block text-danger"></p>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Slug</label>
-              <input type="text" name="slug" class="form-control" placeholder="Slug" id="name" required data-validation-required-message="Please enter your name.">
-              <p class="help-block text-danger"></p>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Image</label>
-              <input type="text" name="image" class="form-control" placeholder="image" id="name" required data-validation-required-message="Please enter your name.">
-              <p class="help-block text-danger"></p>
-            </div>
-          </div>
-
-
-          <br>
-          <div id="success"></div>
-          <button type="submit" class="btn btn-primary" id="sendMessageButton">Send</button>
-        </form>
+        
       </div>
     </div>
   </div>

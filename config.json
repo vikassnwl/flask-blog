@@ -2,6 +2,7 @@
     "params":
     {
         "admin_user": "vikas",
-        "admin_pass": "0000"
+        "admin_pass": "0000",
+        "upload_location": "static/img"
     }
 }
