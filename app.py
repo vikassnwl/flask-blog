@@ -7,7 +7,7 @@ import json
 import os
 import math
 
-# reading parameters from config.py and storing in params
+# storing settings from config.json file for future use
 with open('config.json') as c:
     params = json.load(c)['params']
 
@@ -34,7 +34,6 @@ class Contacts(db.Model):
     email = db.Column(db.String(), nullable=False)
     phone = db.Column(db.String(), nullable=False)
     message = db.Column(db.String(), nullable=False)
-    # date = db.Column(db.String(), nullable=False)
 
 
 class Posts(db.Model):
@@ -47,11 +46,12 @@ class Posts(db.Model):
     date = db.Column(db.DateTime(), nullable=False)
 
 
+# routing for app pages
 @app.route('/')
 def index():
+    # pagination code -> splits posts to show on separate pages on [older posts][newer posts] button click
     posts = Posts.query.all()
     last = math.ceil(len(posts) / int(params['num_posts']))
-    # [:params['num_posts']]
 
     page = request.args.get('page')
     if not str(page).isnumeric():
@@ -83,17 +83,10 @@ def about():
 
 @app.route('/post/<string:post_slug>')
 def post(post_slug):
+    # using slug to fetch entire row containing that slug and passing to post.html page to show content
+    # of that particular post
     single_post = Posts.query.filter_by(slug=post_slug).first()
     return render_template('post.html', post=single_post)
-
-
-@app.route('/uploader', methods=['GET', 'POST'])
-def uploader():
-    if 'user' in session and session['user'] == params['admin_user']:
-        if request.method == 'POST':
-            f = request.files['file']
-            f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-            return 'Uploaded successfully'
 
 
 @app.route('/contact', methods=['GET', 'POST'])
@@ -119,7 +112,6 @@ def dashboard():
 
         if username == params['admin_user'] and password == params['admin_pass']:
             session['user'] = params['admin_user']
-            # return render_template('dashboard.html')
 
     if 'user' in session and session['user'] == params['admin_user']:
 
