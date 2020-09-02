@@ -170,6 +170,7 @@ def edit(sno):
     if 'user' in session and session['user'] == params['admin_user']:
         single_post = Posts.query.filter_by(sno=sno).first()
 
+        # storing form data
         if request.method == 'POST':
             title = request.form.get('title')
             tagline = request.form.get('tagline')
@@ -177,6 +178,10 @@ def edit(sno):
             slug = request.form.get('slug')
             f = request.files['image']
             image = f.filename
+
+            # if we have selected an image to upload on database
+            # then save it to upload folder specified in config.json
+            # and rename it if the file with same name already exists
             if image:
                 while True:
 
@@ -186,15 +191,13 @@ def edit(sno):
                     image = split[0] + '0' + '.' + split[1]
                 f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(image)))
 
-            # adding new post when serial number(sno) is equal to 0
-            # using url[127.0.0.1:5000/edit/0] to add new post
-            # since sno 0 is not present in database because sno starts with 1
+            # adding new post to database when serial number(sno) is equal to 0.
             if sno == '0':
                 entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image,
                               date=datetime.now().strftime("%d %B %Y %I:%M %p"))
                 db.session.add(entry)
 
-            # updating post when serial number(sno) is other than 0
+            # updating existing post on database when serial number(sno) is other than 0
             else:
                 post.title = title
                 post.tagline = tagline
@@ -209,6 +212,6 @@ def edit(sno):
     else:
         return redirect('/login')
 
-
+# running flask app
 if __name__ == '__main__':
     app.run(debug=True)
