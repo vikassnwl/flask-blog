@@ -1,3 +1,4 @@
+# importing required modules
 from flask import Flask, render_template, request, redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
@@ -6,20 +7,27 @@ import json
 import os
 import math
 
+# reading parameters from config.py and storing in params
 with open('config.json') as c:
     params = json.load(c)['params']
 
+# initializing flask app object
 app = Flask(__name__)
 
+# In order to use sessions you have to set a secret key
 app.secret_key = 'unique secret key'
 
+# configuring folder to upload post's images
 app.config['UPLOAD_FOLDER'] = params['upload_location']
 
+# connecting to database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@127.0.0.1/blog'
 
+# creating database object
 db = SQLAlchemy(app)
 
 
+# creating classes to access tables in database
 class Contacts(db.Model):
     sno = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
@@ -42,31 +50,30 @@ class Posts(db.Model):
 @app.route('/')
 def index():
     posts = Posts.query.all()
-    last = math.ceil(len(posts)/int(params['num_posts']))
+    last = math.ceil(len(posts) / int(params['num_posts']))
     # [:params['num_posts']]
-    
+
     page = request.args.get('page')
     if not str(page).isnumeric():
         page = 1
     page = int(page)
-    
-    posts = posts[(page-1)*int(params['num_posts']):(page-1)*int(params['num_posts'])+int(params['num_posts'])]
-    
+
+    posts = posts[
+            (page - 1) * int(params['num_posts']):(page - 1) * int(params['num_posts']) + int(params['num_posts'])]
+
     if page == 1:
         prev = '#'
-        next = "/?page="+str(page+1)
+        next_page = "/?page=" + str(page + 1)
 
     elif page == last:
-        prev = "/?page="+str(page-1)
-        next = "#"
+        prev = "/?page=" + str(page - 1)
+        next_page = "#"
 
     else:
-        prev = "/?page="+str(page-1)
-        next = "/?page="+str(page+1)
+        prev = "/?page=" + str(page - 1)
+        next_page = "/?page=" + str(page + 1)
 
-
-
-    return render_template('index.html', posts=posts, prev=prev, next=next)
+    return render_template('index.html', posts=posts, prev=prev, next_page=next_page)
 
 
 @app.route('/about')
@@ -76,8 +83,8 @@ def about():
 
 @app.route('/post/<string:post_slug>')
 def post(post_slug):
-    post = Posts.query.filter_by(slug=post_slug).first()
-    return render_template('post.html', post=post)
+    single_post = Posts.query.filter_by(slug=post_slug).first()
+    return render_template('post.html', post=single_post)
 
 
 @app.route('/uploader', methods=['GET', 'POST'])
@@ -87,6 +94,7 @@ def uploader():
             f = request.files['file']
             f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
             return 'Uploaded successfully'
+
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -114,7 +122,7 @@ def dashboard():
             # return render_template('dashboard.html')
 
     if 'user' in session and session['user'] == params['admin_user']:
-        
+
         posts = Posts.query.all()
 
         return render_template('dashboard.html', posts=posts)
@@ -142,8 +150,8 @@ def logout():
 @app.route('/delete/<string:sno>')
 def delete(sno):
     if 'user' in session and session['user'] == params['admin_user']:
-        post = Posts.query.filter_by(sno=sno).first()
-        db.session.delete(post)
+        single_post = Posts.query.filter_by(sno=sno).first()
+        db.session.delete(single_post)
         db.session.commit()
     return redirect('/dashboard')
 
@@ -151,7 +159,7 @@ def delete(sno):
 @app.route('/edit/<string:sno>', methods=['GET', 'POST'])
 def edit(sno):
     if 'user' in session and session['user'] == params['admin_user']:
-        post = Posts.query.filter_by(sno=sno).first()
+        single_post = Posts.query.filter_by(sno=sno).first()
 
         if request.method == 'POST':
             title = request.form.get('title')
@@ -165,12 +173,13 @@ def edit(sno):
 
                     if image not in os.listdir('static/img/post'):
                         break
-                    splitted = image.split('.')
-                    image = splitted[0]+'0'+'.'+splitted[1]
+                    split = image.split('.')
+                    image = split[0] + '0' + '.' + split[1]
                 f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(image)))
-            
+
             if sno == '0':
-                entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image, date=datetime.now().strftime("%d %B %Y %I:%M %p"))
+                entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image,
+                              date=datetime.now().strftime("%d %B %Y %I:%M %p"))
                 db.session.add(entry)
             else:
                 post.title = title
@@ -180,9 +189,8 @@ def edit(sno):
                 post.image = image
 
             db.session.commit()
-        
-        return render_template('edit.html', post=post)
 
+        return render_template('edit.html', post=single_post)
 
     else:
         return redirect('/login')
