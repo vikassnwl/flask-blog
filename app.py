@@ -91,6 +91,8 @@ def post(post_slug):
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
+
+    # sending contact data to database using form's post request method
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
@@ -100,19 +102,27 @@ def contact():
         entry = Contacts(name=name, email=email, phone=phone, message=message)
         db.session.add(entry)
         db.session.commit()
+
+        # flashing message after submitting contact form
         flash('Thanks for submitting your details. We will get back to you soon.', 'success')
+
     return render_template('contact.html')
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+
+    # getting username and password from login form
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
+        # checking if username and/or passwords are correct
         if username == params['admin_user'] and password == params['admin_pass']:
+
+            # creating session variable to keep user logged in until he/she logs out
             session['user'] = params['admin_user']
 
+    # showing dashboard with all posts if user is logged in otherwise redirecting to login page
     if 'user' in session and session['user'] == params['admin_user']:
 
         posts = Posts.query.all()
@@ -124,6 +134,9 @@ def dashboard():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # logging in user and redirecting to dashboard
+    # if credentials match with those stored in config.json
+    # otherwise redirecting to login page
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -135,12 +148,15 @@ def login():
 
 @app.route('/logout')
 def logout():
+    # deleting session variable to log the user out
+    # and redirecting to home page
     session.pop('user')
     return redirect('/')
 
 
 @app.route('/delete/<string:sno>')
 def delete(sno):
+    # deleting post by serial number(sno)
     if 'user' in session and session['user'] == params['admin_user']:
         single_post = Posts.query.filter_by(sno=sno).first()
         db.session.delete(single_post)
@@ -150,6 +166,7 @@ def delete(sno):
 
 @app.route('/edit/<string:sno>', methods=['GET', 'POST'])
 def edit(sno):
+    # editing/adding post by serial number(sno)
     if 'user' in session and session['user'] == params['admin_user']:
         single_post = Posts.query.filter_by(sno=sno).first()
 
@@ -169,10 +186,15 @@ def edit(sno):
                     image = split[0] + '0' + '.' + split[1]
                 f.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], secure_filename(image)))
 
+            # adding new post when serial number(sno) is equal to 0
+            # using url[127.0.0.1:5000/edit/0] to add new post
+            # since sno 0 is not present in database because sno starts with 1
             if sno == '0':
                 entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image,
                               date=datetime.now().strftime("%d %B %Y %I:%M %p"))
                 db.session.add(entry)
+
+            # updating post when serial number(sno) is other than 0
             else:
                 post.title = title
                 post.tagline = tagline
