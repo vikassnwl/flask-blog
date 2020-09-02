@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -41,7 +41,6 @@ class Posts(db.Model):
 
 @app.route('/')
 def index():
-
     posts = Posts.query.all()
     last = math.ceil(len(posts)/int(params['num_posts']))
     # [:params['num_posts']]
@@ -100,7 +99,7 @@ def contact():
         entry = Contacts(name=name, email=email, phone=phone, message=message)
         db.session.add(entry)
         db.session.commit()
-
+        flash('Thanks for submitting your details. We will get back to you soon.', 'success')
     return render_template('contact.html')
 
 
