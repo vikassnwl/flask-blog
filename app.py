@@ -27,7 +27,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@127.0.0.1/blog'
 db = SQLAlchemy(app)
 
 
-# creating classes to access tables in database
+# creating classes to access tables from database
 class Contacts(db.Model):
     sno = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
