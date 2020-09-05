@@ -21,7 +21,7 @@ app.secret_key = 'unique secret key'
 app.config['UPLOAD_FOLDER'] = params['upload_location']
 
 # connecting to database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@127.0.0.1/blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:0000@127.0.0.1/blog'
 
 # creating database object
 db = SQLAlchemy(app)
@@ -43,7 +43,7 @@ class Posts(db.Model):
     content = db.Column(db.String(), nullable=False)
     slug = db.Column(db.String(), nullable=False)
     image = db.Column(db.String(), nullable=False)
-    date = db.Column(db.DateTime(), nullable=False)
+    created_at = db.Column(db.DateTime(), nullable=False)
 
 
 # routing for app pages
