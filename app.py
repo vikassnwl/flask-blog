@@ -194,20 +194,21 @@ def edit(sno):
             # adding new post to database when serial number(sno) is equal to 0.
             if sno == '0':
                 entry = Posts(title=title, tagline=tagline, content=content, slug=slug, image=image,
-                              date=datetime.now().strftime("%d %B %Y %I:%M %p"))
+                              created_at=datetime.now().strftime("%d %B %Y %I:%M %p"))
                 db.session.add(entry)
 
             # updating existing post on database when serial number(sno) is other than 0
             else:
-                post.title = title
-                post.tagline = tagline
-                post.content = request.form.get('content')
-                post.slug = slug
-                post.image = image
+                single_post.title = title
+                single_post.tagline = tagline
+                single_post.content = content
+                single_post.slug = slug
+                if image:
+                    single_post.image = image
 
             db.session.commit()
 
-        return render_template('edit.html', post=single_post)
+        return render_template('edit.html', post=single_post, sno=sno)
 
     else:
         return redirect('/login')
