@@ -73,7 +73,7 @@ def index():
         prev = "/?page=" + str(page - 1)
         next_page = "/?page=" + str(page + 1)
 
-    return render_template('index.html', posts=posts, prev=prev, next_page=next_page)
+    return render_template('index.html', posts=posts, prev=prev, next=next_page)
 
 
 @app.route('/about')
@@ -215,4 +215,4 @@ def edit(sno):
 
 # running flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
