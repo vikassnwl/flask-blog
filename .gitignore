@@ -2,3 +2,4 @@ venv
 .vscode
 static/img/post
 .idea
+env

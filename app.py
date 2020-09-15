@@ -6,6 +6,8 @@ from datetime import datetime
 import json
 import os
 import math
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 
 # storing settings from config.json file for future use
 with open('config.json') as c:
@@ -21,11 +23,14 @@ app.secret_key = 'unique secret key'
 app.config['UPLOAD_FOLDER'] = params['upload_location']
 
 # connecting to database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@127.0.0.1/blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:0000@127.0.0.1/blog'
 
 # creating database object
 db = SQLAlchemy(app)
 
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 # creating classes to access tables from database
 class Contacts(db.Model):
@@ -44,6 +49,7 @@ class Posts(db.Model):
     slug = db.Column(db.String(), nullable=False)
     image = db.Column(db.String(), nullable=False)
     date = db.Column(db.DateTime(), nullable=False)
+
 
 
 # routing for app pages
@@ -174,7 +180,7 @@ def edit(sno):
         if request.method == 'POST':
             title = request.form.get('title')
             tagline = request.form.get('tagline')
-            content = request.form.get('content')
+            content = request.form.get('content').split('\n')
             slug = request.form.get('slug')
             f = request.files['image']
             image = f.filename
@@ -199,11 +205,11 @@ def edit(sno):
 
             # updating existing post on database when serial number(sno) is other than 0
             else:
-                post.title = title
-                post.tagline = tagline
-                post.content = request.form.get('content')
-                post.slug = slug
-                post.image = image
+                single_post.title = title
+                single_post.tagline = tagline
+                single_post.content = content
+                single_post.slug = slug
+                single_post.image = image
 
             db.session.commit()
 
@@ -215,3 +221,9 @@ def edit(sno):
 # running flask app
 if __name__ == '__main__':
     app.run(debug=True)
+    # manager.run()
+
+# commands to migrate tables to database
+# python app.py db init
+# python app.py db migrate
+# python app.py db upgrade
